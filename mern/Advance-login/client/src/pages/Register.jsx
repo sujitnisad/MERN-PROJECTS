@@ -1,15 +1,20 @@
 import React, { useState } from "react";
+
 import backgroundImage from "../images/back.jpg";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-function Login() {
+function Register() {
   const navigate = useNavigate();
   const [data, setData] = useState({
+    firstname: "",
+    lastname: "",
     email: "",
     password: "",
   });
   const [errors, setErrors] = useState({
+    firstname: "",
+    lastname: "",
     email: "",
     password: "",
   });
@@ -23,6 +28,18 @@ function Login() {
   const validate = () => {
     let newErrors = { ...errors };
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!data.firstname.trim()) {
+      newErrors.firstname = "First name is required";
+    } else {
+      newErrors.firstname = "";
+    }
+
+    if (!data.lastname.trim()) {
+      newErrors.lastname = "Last name is required";
+    } else {
+      newErrors.lastname = "";
+    }
 
     if (!data.email.trim()) {
       newErrors.email = "Email is required";
@@ -41,42 +58,34 @@ function Login() {
     }
 
     setErrors(newErrors);
-    return Object.values(newErrors).some((error) => error !== "");
+    return Object.values(newErrors).some((error) => error !== ""); // Returns true if there are any errors
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const hasErrors = validate();
     if (hasErrors) {
-      return;
+      return; // Don't submit if there are validation errors
     }
     try {
+      const { firstname, lastname, email, password } = data;
+      const name = `${firstname} ${lastname};`;
+      const user = { name, email, password };
       const res = await axios.post(
-        "http://localhost:4000/api/auth/login",
-        data
+        "http://localhost:4000/api/auth/register",
+        user
       );
       const newres = res.data;
-      console.log("logged in successfully", newres);
-
-      if (newres.success) {
-        // Redirect only if the backend indicates success
-        setData({
-          email: "",
-          password: "",
-        });
-        navigate("/homein");
-      } else {
-        // Handle unsuccessful login, e.g., display an error message
-        console.error("Login failed:", newres.message);
-        // You might want to set a new error state to display a message to the user
-        // For example:
-        // setErrors({ ...errors, backend: newres.message });
-      }
+      console.log("data submitted successfully: ", newres);
+      setData({
+        firstname: "",
+        lastname: "",
+        email: "",
+        password: "",
+      });
+      navigate("/login");
     } catch (e) {
-      console.error("Error during login:", e);
-      // Handle network errors or other exceptions
-      // You might want to set an error state here as well
-      // setErrors({ ...errors, backend: "Failed to connect to the server." });
+      console.log(e);
     }
   };
 
@@ -108,18 +117,43 @@ function Login() {
             </div>
           </div>
           <div className="w-1/2 py-16 px-12">
-            <h2 className="text-3xl mb-4">Login</h2>
-            <p className="mb-4">Please Login to vist your dashboard</p>
+            <h2 className="text-3xl mb-4">Register</h2>
+            <p className="mb-4">
+              Please create your account and join our community
+            </p>
             <form onSubmit={handleSubmit}>
               <div className="flex gap-4 flex-col">
+                <div className="flex gap-5">
+                  <input
+                    type="text"
+                    name="firstname"
+                    value={data.firstname}
+                    placeholder="First Name"
+                    className="border border-gray-400 py-1 px-2 w-full"
+                    onChange={handleChange}
+                  />
+                  {errors.firstname && (
+                    <p className="text-red-500 text-sm">{errors.firstname}</p>
+                  )}
+                  <input
+                    type="text"
+                    name="lastname"
+                    value={data.lastname}
+                    placeholder="Last Name"
+                    className="border border-gray-400 py-1 px-2 w-full"
+                    onChange={handleChange}
+                  />
+                  {errors.lastname && (
+                    <p className="text-red-500 text-sm">{errors.lastname}</p>
+                  )}
+                </div>
+
                 <input
                   type="email"
                   name="email"
                   value={data.email}
                   placeholder="Email"
-                  className={`border ${
-                    errors.email ? "border-red-500" : "border-gray-400"
-                  } py-1 px-2 w-full`}
+                  className="border border-gray-400 py-1 px-2 w-full"
                   onChange={handleChange}
                 />
                 {errors.email && (
@@ -130,33 +164,18 @@ function Login() {
                   name="password"
                   value={data.password}
                   placeholder="Password"
-                  className={`border ${
-                    errors.password ? "border-red-500" : "border-gray-400"
-                  } py-1 px-2 w-full`}
+                  className="border border-gray-400 py-1 px-2 w-full"
                   onChange={handleChange}
                 />
                 {errors.password && (
                   <p className="text-red-500 text-sm">{errors.password}</p>
                 )}
-                {/* Example of displaying a backend error */}
-                {/* {errors.backend && (
-                  <p className="text-red-500 text-sm">{errors.backend}</p>
-                )} */}
                 <button
                   type="submit"
                   className="w-full bg-purple-400 px-3 py-2 border border-gray-600 mt-3 text-white text-center"
                 >
-                  Login
+                  Register
                 </button>
-                <div className="flex">
-                  <p>Not registered?</p>
-                  <Link
-                    to="/register"
-                    className="pl-2 text-blue-500 hover:underline"
-                  >
-                    Click here
-                  </Link>
-                </div>
               </div>
             </form>
           </div>
@@ -166,4 +185,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default Register;

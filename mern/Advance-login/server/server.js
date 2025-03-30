@@ -20,9 +20,8 @@ app.get("/", (req, res) => {
   res.send("hello from sujit bhai");
 });
 
-app.use('/api/auth',authRouter)
-app.use('/api/user',userRouter)
-
+app.use("/api/auth", authRouter);
+app.use("/api/user", userRouter);
 
 app.listen(port, () => {
   console.log(`server is running on port ${port}`);

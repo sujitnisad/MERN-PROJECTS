@@ -86,11 +86,11 @@ export const userLogin = async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      secure: process.env.NODE_ENV === "production", // true in production
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-
+    console.log("user logged in");
     return res.json({ success: true });
   } catch (error) {
     console.error("Error during login:", error);
@@ -182,11 +182,26 @@ export const verifyEmail = async (req, res) => {
   }
 };
 
+const handleError = (res, message, statusCode = 500) => {
+  return res.status(statusCode).json({ success: false, message });
+};
+
 export const isAuthenticated = async (req, res) => {
   try {
-    return res.json({ success: true, message: "User is Authenticated" });
-  } catch (e) {
-    return res.json({ success: false, message: e.message });
+    const token = req.cookies.token;
+    if (!token) {
+      return handleError(res, "No token provided", 401);
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        return handleError(res, "Failed to authenticate token", 401);
+      }
+      return res.json({ success: true, userId: decoded.id });
+    });
+  } catch (error) {
+    console.error("Authentication error:", error);
+    return handleError(res, "Authentication check failed");
   }
 };
 

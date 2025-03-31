@@ -50,33 +50,29 @@ function Login() {
     if (hasErrors) {
       return;
     }
+
     try {
       const res = await axios.post(
         "http://localhost:4000/api/auth/login",
-        data
+        data,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
       const newres = res.data;
-      console.log("logged in successfully", newres);
+      console.log("Response from login:", newres); // Log response
 
       if (newres.success) {
-        // Redirect only if the backend indicates success
-        setData({
-          email: "",
-          password: "",
-        });
-        navigate("/homein");
+        setData({ email: "", password: "" });
+        navigate("/test");
       } else {
-        // Handle unsuccessful login, e.g., display an error message
         console.error("Login failed:", newres.message);
-        // You might want to set a new error state to display a message to the user
-        // For example:
-        // setErrors({ ...errors, backend: newres.message });
       }
     } catch (e) {
       console.error("Error during login:", e);
-      // Handle network errors or other exceptions
-      // You might want to set an error state here as well
-      // setErrors({ ...errors, backend: "Failed to connect to the server." });
     }
   };
 
